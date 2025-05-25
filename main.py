@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import datetime
 
 from ind import calculate_sma, calculate_rsi
-from visualize import plot_stock
+from visualize import plot_stock, plot_forecast
+from forecast import forecast_prices
 
 def fetch_data(ticker, start='2022-01-01', end='2023-01-01'):
     try:
@@ -53,6 +54,21 @@ if __name__ == "__main__":
         df = calculate_sma(df)
         df = calculate_rsi(df)
         plot_stock(df, ticker)
+
+        #ARIMA parameters
+        try:
+            p = int(input("ARIMA p (default 5): ") or 5)
+            d = int(input("ARIMA d (default 1): ") or 1)
+            q = int(input("ARIMA q (default 0): ") or 0)
+        except ValueError:
+            p, d, q = 5, 1, 0
+
+        steps = int(input("Forecast steps (days, default 30): ") or 30)
+        forecast, conf_int = forecast_prices(df, steps=steps, arima_order=(p, d, q))
+        print("\nForecasted Close Prices for next {} days:".format(steps))
+        print(forecast)
+
+        plot_forecast(df, forecast, conf_int, ticker)
     else:
         print("No data to plot.")
 
